@@ -1,9 +1,14 @@
 import java.io.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 public class Basket implements Serializable {
 
     private String[] products;
     private long[] prices;
+
     private int[] cart;
 
     public Basket(String[] products, long[] prices) {
@@ -25,8 +30,8 @@ public class Basket implements Serializable {
     }
 
     public void addToCart(int productNum, int amount) {
-        cart[productNum] += amount;
-        saveTxt(new File("basket.txt"));
+        cart[(productNum-1)] += amount;
+        saveBin(new File("basket.bin"));
     }
 
     public void printCart() {
@@ -52,7 +57,7 @@ public class Basket implements Serializable {
                 writer.print(price + " ");
             }
         } catch (IOException e) {
-            System.out.println("Произошла ошибка сохранения в файл!");
+            System.out.println("Произошла ошибка сохранения корзины в файл!");
         }
     }
 
@@ -69,8 +74,8 @@ public class Basket implements Serializable {
                 cartLoad[i] = Integer.parseInt(loadInformation[i]);
             }
 
-            String[] productsLoad = reader.readLine().split(" ");
-
+             String[] productsLoad = reader.readLine().split(" ");
+            // считываем информацию с ценами на продукты
             loadInformation = reader.readLine().split(" ");
             long[] pricesLoad = new long[loadInformation.length];
             for (int i = 0; i < loadInformation.length; i++) {
@@ -86,5 +91,22 @@ public class Basket implements Serializable {
         return null;
     }
 
-}
+    public void saveBin(File file) {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file))) {
+            outputStream.writeObject(this);
+        } catch (IOException e) {
+            System.out.println("Произошла ошибка сохранения корзины!");
+        }
+    }
 
+    public static Basket loadFromBinFile(File file) {
+        Basket basket = null;
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
+            basket = (Basket) inputStream.readObject();
+            return basket;
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Произошла ошибка загрузки из файла");
+        }
+        return basket;
+    }
+}
